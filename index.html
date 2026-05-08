@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Coffee Sensory Lexicon</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <link href="./css/style.css" rel="stylesheet">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "dexie": "./node_modules/dexie/dist/dexie.mjs"
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-gray-50 text-gray-900 font-sans antialiased overflow-hidden select-none">
+
+  <!-- Main Content Area -->
+  <main id="main-content" class="h-[calc(100vh-64px)] overflow-y-auto pb-6 relative max-w-3xl mx-auto">
+
+    <!-- Dashboard View -->
+    <section id="view-dashboard" class="w-full h-full p-4 fade-enter-active hidden">
+      <header class="flex justify-between items-center mb-6 pt-4">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Logs</h1>
+        <div class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
+          <span id="stats-total">0</span> total
+        </div>
+      </header>
+      <div id="log-list" class="space-y-4">
+        <!-- Log Cards will be injected here -->
+      </div>
+      <div id="empty-state" class="hidden flex flex-col items-center justify-center h-64 text-gray-400">
+        <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+          </path>
+        </svg>
+        <p>No coffee logs yet.</p>
+      </div>
+    </section>
+
+    <!-- Stats View -->
+    <section id="view-stats" class="w-full h-full p-4 fade-enter-active hidden">
+      <header class="flex justify-between items-center mb-6 pt-4">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Statistics</h1>
+      </header>
+
+      <div id="stats-container" class="space-y-4 pb-10">
+        <!-- Stats Dashboard will be injected here -->
+      </div>
+    </section>
+
+    <!-- Settings View -->
+    <section id="view-settings" class="w-full h-full p-4 fade-enter-active hidden">
+      <header class="mb-6 pt-4">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Settings</h1>
+      </header>
+      <div class="glass-panel rounded-2xl p-4 mb-4">
+        <h2 class="text-lg font-semibold mb-2">Data Management</h2>
+        <p class="text-sm text-gray-500 mb-4">Export your coffee logs as a JSON file for backup or analysis.</p>
+        <button id="btn-export"
+          class="w-full bg-indigo-600 text-white font-medium py-3 rounded-xl shadow-md active:scale-95 transition-transform flex justify-center items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          Export to JSON
+        </button>
+      </div>
+      <div class="glass-panel rounded-2xl p-4 border-red-100">
+        <h2 class="text-lg font-semibold text-red-600 mb-2">Danger Zone</h2>
+        <button id="btn-seed-data"
+          class="w-full bg-amber-50 text-amber-700 font-medium py-3 rounded-xl shadow-sm active:scale-95 transition-transform mt-2 mb-3 border border-amber-100">
+          Seed Mock Logs & Vendor Data
+        </button>
+        <button id="btn-clear-all"
+          class="w-full bg-red-50 text-red-600 font-medium py-3 rounded-xl shadow-sm active:scale-95 transition-transform mb-3 border border-red-100">
+          Clear All Records
+        </button>
+        <button id="btn-reset-db"
+          class="w-full bg-gray-900 text-white font-medium py-3 rounded-xl shadow-sm active:scale-95 transition-transform">
+          Reset Database (Factory)
+        </button>
+      </div>
+    </section>
+
+    <!-- Recommend View -->
+    <section id="view-recommend" class="w-full h-full p-4 fade-enter-active hidden">
+      <header class="flex justify-between items-center mb-6 pt-4">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Recommend</h1>
+        <button id="btn-i-like" class="bg-amber-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md active:scale-95 transition-transform flex items-center">
+          <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path></svg>
+          I Like...
+        </button>
+      </header>
+      <div id="recommend-list" class="space-y-6 pb-20">
+        <!-- Recommendations will be injected here -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Tab Bar -->
+  <nav
+    class="fixed bottom-0 w-full h-16 bg-white/90 backdrop-blur-md border-t border-gray-200 flex justify-around items-center px-2 z-40 pb-safe">
+    <button id="tab-dashboard" class="flex flex-col items-center justify-center w-16 h-full text-amber-600">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+        </path>
+      </svg>
+      <span class="text-[10px] mt-1 font-medium">Logs</span>
+    </button>
+
+    <button id="tab-stats" class="flex flex-col items-center justify-center w-16 h-full text-gray-400">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+        </path>
+      </svg>
+      <span class="text-[10px] mt-1 font-medium">Stats</span>
+    </button>
+
+    <!-- Floating Add Button -->
+    <div class="relative -top-5">
+      <button id="btn-add-log"
+        class="w-14 h-14 bg-amber-600 rounded-full text-white shadow-lg shadow-amber-600/40 flex items-center justify-center transform transition-transform active:scale-90 z-50">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+      </button>
+    </div>
+
+    <button id="tab-recommend" class="flex flex-col items-center justify-center w-16 h-full text-gray-400">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z">
+        </path>
+      </svg>
+      <span class="text-[10px] mt-1 font-medium">Recommend</span>
+    </button>
+
+    <button id="tab-settings" class="flex flex-col items-center justify-center w-16 h-full text-gray-400">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+        </path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+        </path>
+      </svg>
+      <span class="text-[10px] mt-1 font-medium">Settings</span>
+    </button>
+  </nav>
+
+  <!-- Logger Modal (Slide Up) -->
+  <div id="modal-logger" class="fixed inset-0 z-50 hidden slide-up-exit">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" id="modal-backdrop"></div>
+    <div
+      class="absolute inset-x-0 bottom-0 top-12 bg-white rounded-t-3xl shadow-2xl flex flex-col transform transition-transform duration-300">
+      <div class="w-full flex justify-center py-3" id="modal-drag-handle">
+        <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+      </div>
+      <header class="px-6 pb-4 flex justify-between items-center border-b border-gray-100">
+        <h2 class="text-2xl font-bold text-gray-900">New Log</h2>
+        <button id="btn-close-modal" class="p-2 text-gray-400 bg-gray-100 rounded-full active:bg-gray-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </header>
+
+      <!-- Logger Form Scrollable Area -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-6" id="logger-form-container">
+        <!-- Will be populated by JS -->
+      </div>
+
+      <div id="modal-footer" class="p-4 border-t border-gray-100 bg-white">
+        <button id="btn-save-log"
+          class="w-full bg-amber-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-transform text-lg">
+          Save Record
+        </button>
+        <div id="edit-actions" class="hidden flex gap-3">
+          <button id="btn-cancel-edit"
+            class="flex-1 bg-gray-100 text-gray-500 font-bold py-4 rounded-2xl active:scale-95 transition-transform text-lg">
+            Cancel
+          </button>
+          <button id="btn-apply-edit"
+            class="flex-[2] bg-amber-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-transform text-lg">
+            Apply Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preference Modal (I Like...) -->
+  <div id="modal-preference" class="fixed inset-0 z-50 hidden slide-up-exit">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" id="preference-backdrop"></div>
+    <div
+      class="absolute inset-x-0 bottom-0 top-12 bg-white rounded-t-3xl shadow-2xl flex flex-col transform transition-transform duration-300">
+      <div class="w-full flex justify-center py-3" id="preference-drag-handle">
+        <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+      </div>
+      <header class="px-6 pb-4 flex justify-between items-center border-b border-gray-100">
+        <h2 class="text-2xl font-bold text-gray-900">I Like...</h2>
+        <button id="btn-close-preference" class="p-2 text-gray-400 bg-gray-100 rounded-full active:bg-gray-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </header>
+
+      <div class="flex-1 overflow-y-auto p-6 space-y-6" id="preference-form-container">
+        <!-- Will be populated by JS -->
+      </div>
+
+      <div class="p-4 border-t border-gray-100 bg-white">
+        <button id="btn-get-recommendations"
+          class="w-full bg-amber-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-transform text-lg">
+          Get Recommendations
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flavor Drill-down Menu Modal -->
+  <div id="modal-flavor" class="fixed inset-0 z-[60] hidden slide-up-exit">
+    <div class="absolute inset-0 bg-gray-50/90 backdrop-blur-xl flex flex-col">
+      <header class="px-6 py-6 flex items-center bg-white/50 backdrop-blur-md sticky top-0 z-20">
+        <button id="btn-back-flavor"
+          class="p-2 text-gray-900 bg-white rounded-full shadow-sm mr-4 hidden active:scale-90 transition-transform">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        <h2 id="flavor-title" class="text-2xl font-black text-gray-900 flex-1 tracking-tight">Select Flavor</h2>
+        <button id="btn-add-current-flavor" class="p-2 text-amber-600 font-bold hidden">
+          + Add
+        </button>
+        <button id="btn-close-flavor"
+          class="p-3 text-gray-500 bg-white rounded-full shadow-sm ml-2 active:scale-90 transition-transform">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </header>
+      <div id="flavor-list" class="flex-1 overflow-y-auto pb-10">
+        <!-- Flavor options injected here -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+
+</html>

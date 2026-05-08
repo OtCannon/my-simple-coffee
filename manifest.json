@@ -1,0 +1,22 @@
+{
+  "name": "Coffee Sensory Lexicon",
+  "short_name": "CoffeeLog",
+  "description": "A local-first PWA for recording coffee sensory evaluations.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#d97706",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee App Diagnostic Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .pass { color: #10b981; font-weight: bold; }
+        .fail { color: #ef4444; font-weight: bold; }
+        .log-entry { font-family: monospace; border-bottom: 1px solid #f3f4f6; padding: 4px 0; }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+        <h1 class="text-2xl font-black text-gray-900 mb-6">System Diagnostic Suite</h1>
+        
+        <div id="status-panel" class="mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+            <p class="text-sm text-gray-500 mb-2">Testing database connection and CRUD integrity...</p>
+            <div id="results" class="space-y-1"></div>
+        </div>
+
+        <div class="flex gap-4">
+            <button id="run-db-tests" class="bg-amber-600 text-white px-6 py-3 rounded-xl font-bold shadow-sm">Run DB Tests</button>
+            <button id="run-ui-checks" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-sm">Check UI Elements</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as DB from './js/db.js';
+        
+        const resultsDiv = document.getElementById('results');
+        
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            resultsDiv.appendChild(div);
+            console.log(msg);
+        }
+
+        async function runDBTests() {
+            resultsDiv.innerHTML = '';
+            log("Starting DB Integrity Tests...");
+            
+            try {
+                // 1. Connection
+                await DB.initDB();
+                log("PASS: Database connected", 'pass');
+
+                // 2. Clear
+                await DB.clearAllLogs();
+                const logsAfterClear = await DB.getAllLogs();
+                if (logsAfterClear.length === 0) {
+                    log("PASS: clearAllLogs() works", 'pass');
+                } else {
+                    log("FAIL: clearAllLogs() did not empty the table", 'fail');
+                }
+
+                // 3. Add
+                const testLog = {
+                    bean_name: "Test Bean",
+                    ratings: { overall: 5 },
+                    date: "2023-01-01"
+                };
+                const newId = await DB.addLog(testLog);
+                log(`PASS: addLog() returned ID: ${newId}`, 'pass');
+
+                // 4. Get by ID
+                const fetched = await DB.getLogById(newId);
+                if (fetched && fetched.bean_name === "Test Bean") {
+                    log("PASS: getLogById() works (Type: " + typeof fetched.id + ")", 'pass');
+                } else {
+                    log("FAIL: getLogById() returned " + JSON.stringify(fetched), 'fail');
+                }
+
+                // 5. Update
+                await DB.updateLog(newId, { bean_name: "Updated Bean" });
+                const updated = await DB.getLogById(newId);
+                if (updated && updated.bean_name === "Updated Bean") {
+                    log("PASS: updateLog() works", 'pass');
+                } else {
+                    log("FAIL: updateLog() failed to persist change", 'fail');
+                }
+
+                // 6. Seed
+                await DB.seedMockData();
+                const all = await DB.getAllLogs();
+                if (all.length >= 100) {
+                    log(`PASS: seedMockData() added 100 logs. Total: ${all.length}`, 'pass');
+                } else {
+                    log(`FAIL: seedMockData() only found ${all.length} logs`, 'fail');
+                }
+
+            } catch (err) {
+                log(`CRITICAL ERROR: ${err.message}`, 'fail');
+                console.error(err);
+            }
+        }
+
+        function checkUI() {
+            log("Checking UI button IDs in main page...");
+            // We'll check if the elements exist in index.html by fetching it or assuming this script runs in the context
+            // Since this is a separate page, we can't check the other page's DOM directly easily without an iframe.
+            log("Manual Check Recommendation: Ensure index.html has IDs 'btn-seed-data', 'btn-clear-all', and 'btn-reset-db'");
+            log("Element Verification logic requires browser environment check.");
+        }
+
+        document.getElementById('run-db-tests').addEventListener('click', runDBTests);
+        document.getElementById('run-ui-checks').addEventListener('click', checkUI);
+    </script>
+</body>
+</html>
