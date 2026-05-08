@@ -1,9 +1,16 @@
 # Dependencies
 node_modules/
-.pnpm-debug.log*
+.pnpm-store/
+
+# Package manager lockfiles (prevent conflicts since using pnpm)
+package-lock.json
+yarn.lock
 
 # Build outputs
 css/style.css
+dist/
+build/
+out/
 
 # OS files
 .DS_Store
@@ -27,7 +34,16 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Testing
+coverage/
+
 # Environment variables
 .env
 .env.local
 .env.*.local
+
+# Database / Exports (Optional)
+*.db
+*.sqlite
+# data_export.json (if you have specific export filenames)
+
